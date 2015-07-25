@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ * Install, uninstall, and requirement functions for the Sirv module.
+ */
+
+/**
+ * Implements hook_requirements().
+ *
+ * TODO: Add requirement for S3 PHP Library and Sirv connection.
+ */
+function sirv_requirements($phase) {
+  $requirements = array();
+
+  return $requirements;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function sirv_uninstall() {
+  // Delete this module's variables.
+  $variables = array('key', 'secret_key', 'bucket', 'host', 'profiles_directory');
+  foreach ($variables as $variable) {
+    variable_del("sirv_$variable");
+  }
+}

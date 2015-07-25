@@ -1,1 +1,119 @@
 <?php
+
+/**
+ * @file
+ * Provides integration with Sirv's image service.
+ */
+
+define('SIRV_MENU_PATH', 'admin/config/media/sirv');
+
+/**
+ * Implements hook_permission().
+ */
+function sirv_permission() {
+  return array(
+    'administer sirv settings' => array(
+      'title' => t('Administer Sirv settings'),
+      'description' => "Modify settings for connecting to Sirv.",
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function sirv_menu() {
+  $items = array();
+
+  $items[SIRV_MENU_PATH] = array(
+    'title' => 'Sirv',
+    'description' => 'Settings for connecting to Sirv.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sirv_settings_form'),
+    'access arguments' => array('administer sirv settings'),
+    'file' => 'sirv.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items[SIRV_MENU_PATH . '/settings'] = array(
+    'title' => 'Settings',
+    'description' => 'Settings for connecting to Sirv.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sirv_settings_form'),
+    'access arguments' => array('administer sirv settings'),
+    'file' => 'sirv.admin.inc',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+
+  return $items;
+}
+
+/**
+ * Retrieve available Sirv profiles.
+ */
+function sirv_profiles() {
+  $profiles = array();
+
+  $bucket = variable_get('sirv_bucket');
+  $profiles_directory = variable_get('sirv_profiles_directory');
+
+  $s3client = _sirv_s3client();
+
+  $iterator = $s3client->getIterator('ListObjects', array(
+    'Bucket' => $bucket,
+    'Prefix' => $profiles_directory,
+  ));
+
+  foreach ($iterator as $object) {
+    $key = $object['Key'];
+    if (preg_match('#([^/]+)\.profile$#', $key, $matches)) {
+      $profiles[$matches[1]] = $matches[1];
+    }
+  }
+
+  return $profiles;
+}
+
+/**
+ * Loads the awssdk2 library.
+ *
+ * @return array
+ *   The array returned by libraries_load('awssdk2'), as if it used no cache.
+ */
+function _sirv_load_awssdk2_library() {
+  // Start by calling libraries_load().
+  $library = libraries_load('awssdk2');
+  // If it detects and loads the library, great! We're done.
+  if (!empty($library['loaded'])) {
+    return $library;
+  }
+  // Otherwise, clear the awssdk2 value from the Libraries cache, erase the
+  // static data for libraries_load(), then call it again to get the real
+  // state of the library.
+  cache_clear_all('awssdk2', 'cache_libraries');
+  drupal_static_reset('libraries_load');
+  return libraries_load('awssdk2');
+}
+
+/**
+ * Create and return a new S3 Client object.
+ *
+ * @return S3Client object
+ */
+function _sirv_s3client(){
+  $library = _sirv_load_awssdk2_library();
+
+  $key = variable_get('sirv_key');
+  $secret_key = variable_get('sirv_secret_key');
+  $host = variable_get('sirv_host');
+
+  $client_config = array(
+    'base_url' => $host,
+    'key'      => $key,
+    'secret'   => $secret_key,
+  );
+
+  $s3client = Aws\S3\S3Client::factory($client_config);
+
+  return $s3client;
+}
