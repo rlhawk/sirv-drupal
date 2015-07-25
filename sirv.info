@@ -1,0 +1,6 @@
+name = Sirv
+description = "Provides integration with the Sirv image service."
+core = 7.x
+; Requires image_suppress_itok_output variable.
+; @see http://drupal.org/node/1934498
+dependencies[] = system (>7.36)
