@@ -49,7 +49,131 @@ function sirv_menu() {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function sirv_theme($existing, $type, $theme, $path) {
+  return array(
+    'sirv_image_formatter' => array(
+      'variables' => array('item' => NULL, 'sirv_profile' => NULL, 'path' => NULL),
+      'file' => 'sirv.theme.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function sirv_field_formatter_info() {
+  return array(
+    'sirv_image' => array(
+      'label' => t('Sirv Image'),
+      'field types' => array('image'),
+      'settings' => array('sirv_profile' => '', 'image_link' => ''),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function sirv_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $profiles = sirv_profiles();
+  $element['sirv_profile'] = array(
+    '#title' => t('Sirv profile'),
+    '#type' => 'select',
+    '#default_value' => $settings['sirv_profile'],
+    '#empty_option' => t('None (original image)'),
+    '#options' => $profiles,
+  );
+
+  $link_types = array(
+    'content' => t('Content'),
+    'file' => t('File'),
+  );
+  $element['image_link'] = array(
+    '#title' => t('Link image to'),
+    '#type' => 'select',
+    '#default_value' => $settings['image_link'],
+    '#empty_option' => t('Nothing'),
+    '#options' => $link_types,
+  );
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function sirv_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $summary = array();
+
+  $profiles = sirv_profiles();
+  if (isset($profiles[$settings['sirv_profile']])) {
+    $summary[] = t('Sirv profile: @profile', array('@profile' => $profiles[$settings['sirv_profile']]));
+  }
+  else {
+    $summary[] = t('Original image');
+  }
+
+  $link_types = array(
+    'content' => t('Linked to content'),
+    'file' => t('Linked to file'),
+  );
+  // Display this setting only if image is linked.
+  if (isset($link_types[$settings['image_link']])) {
+    $summary[] = $link_types[$settings['image_link']];
+  }
+
+  return implode('<br />', $summary);
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function sirv_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  // Check if the formatter involves a link.
+  if ($display['settings']['image_link'] == 'content') {
+    $uri = entity_uri($entity_type, $entity);
+  }
+  elseif ($display['settings']['image_link'] == 'file') {
+    $link_file = TRUE;
+  }
+
+  foreach ($items as $delta => $item) {
+    if (isset($link_file)) {
+      $options = array();
+      if (!empty($display['settings']['sirv_profile'])) {
+        $options['query']['profile'] = $display['settings']['sirv_profile'];
+      }
+      $uri = array(
+        'path' => file_create_url($item['uri']),
+        'options' => $options,
+      );
+    }
+    $element[$delta] = array(
+      '#theme' => 'sirv_image_formatter',
+      '#item' => $item,
+      '#sirv_profile' => $display['settings']['sirv_profile'],
+      '#path' => isset($uri) ? $uri : '',
+    );
+  }
+
+  return $element;
+}
+
+/**
  * Retrieve available Sirv profiles.
+ *
+ * @return array
+ *   An array of Sirv profiles.
  */
 function sirv_profiles() {
   $profiles = array();
