@@ -38,7 +38,7 @@ function theme_sirv_image_formatter($variables) {
     $image['title'] = $item['title'];
   }
 
-  $output = theme('image', $image);
+  $output = theme('sirv_image', $image);
 
   // The link path and link options are both optional, but for the options to be
   // processed, the link path must at least be an empty string.
@@ -51,4 +51,35 @@ function theme_sirv_image_formatter($variables) {
   }
 
   return $output;
+}
+
+/**
+ * Returns HTML for a Sirv image.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - path: Either the path of the image file (relative to base_path()) or a
+ *     full URL.
+ *   - width: The width of the image (if known).
+ *   - height: The height of the image (if known).
+ *   - alt: The alternative text for text-based browsers.
+ *   - title: The title text is displayed when the image is hovered in some
+ *     popular browsers.
+ *   - url_attribute: The attribute to use for the URL (src or data-src,
+ *     for example).
+ *   - attributes: Associative array of attributes to be placed in the img tag.
+ */
+function theme_sirv_image($variables) {
+  $attributes = $variables['attributes'];
+
+  $url_attribute = (!empty($variables['url_attribute'])) ? $variables['url_attribute'] : 'src';
+  $attributes[$url_attribute] = file_create_url($variables['path']);
+
+  foreach (array('width', 'height', 'alt', 'title') as $key) {
+    if (isset($variables[$key])) {
+      $attributes[$key] = $variables[$key];
+    }
+  }
+
+  return '<img' . drupal_attributes($attributes) . ' />';
 }

@@ -57,6 +57,10 @@ function sirv_theme($existing, $type, $theme, $path) {
       'variables' => array('item' => NULL, 'sirv_profile' => NULL, 'path' => NULL),
       'file' => 'sirv.theme.inc',
     ),
+    'sirv_image' => array(
+      'variables' => array('path' => NULL, 'width' => NULL, 'height' => NULL, 'alt' => '', 'title' => NULL, 'url_attribute' => 'src', 'attributes' => array()),
+      'file' => 'sirv.theme.inc',
+    ),
   );
 }
 
