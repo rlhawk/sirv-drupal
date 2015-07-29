@@ -1,0 +1,134 @@
+<?php
+
+/**
+ * @file
+ * Install, uninstall, and requirement functions for the Sirv Zoom module.
+ */
+
+/**
+ * Implements hook_schema().
+ *
+ * Create table to store Sirv Zoom profiles.
+ */
+function sirv_zoom_schema() {
+  $schema['sirv_zoom_profile'] = array(
+    'description' => 'Stores Sirv Zoom profiles.',
+    'fields' => array(
+      'name' => array(
+        'description' => 'The machine name of the profile.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
+      'label' => array(
+        'description' => 'The human-readable label of the profile.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the profile was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the profile was last saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'click_to_zoom' => array(
+        'description' => 'Number of clicks to zoom in (0 = disabled zoom on click).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'default' => NULL,
+      ),
+      'zoom_on_wheel' => array(
+        'description' => 'Zoom in and out on mouse wheel.',
+        'type' => 'varchar',
+        'length' => 32,
+        'default' => NULL,
+      ),
+      'fullscreen' => array(
+        'description' => 'Enable or disable the fullscreen view.',
+        'type' => 'varchar',
+        'length' => 32,
+        'default' => NULL,
+      ),
+      'fullscreen_only' => array(
+        'description' => 'Click main image to go immediately to full-screen.',
+        'type' => 'varchar',
+        'length' => 32,
+        'default' => NULL,
+      ),
+      'retina' => array(
+        'description' => 'Enable retina images.',
+        'type' => 'varchar',
+        'length' => 32,
+        'default' => NULL,
+      ),
+      'thumbnails' => array(
+        'description' => 'Thumbnails position – use #id to put thumbnails in an external box.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+      'thumbnails_orientation' => array(
+        'description' => 'Orientation of thumbnails when they are positioned outside (via #id).',
+        'type' => 'varchar',
+        'length' => 32,
+        'default' => NULL,
+      ),
+      'square_thumbnails' => array(
+        'description' => 'Enable or disable square thumbnails.',
+        'type' => 'varchar',
+        'length' => 32,
+        'default' => NULL,
+      ),
+      'context_menu' => array(
+        'description' => 'Enable context menu.',
+        'type' => 'varchar',
+        'length' => 32,
+        'default' => NULL,
+      ),
+      'text_zoom_in' => array(
+        'description' => 'Text displayed for the zoom-in option.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+      'text_zoom_out' => array(
+        'description' => 'Text displayed for the zoom-out option.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+      'text_enter_fullscreen' => array(
+        'description' => 'Text displayed for the enter-fullscreen option.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+      'text_exit_fullscreen' => array(
+        'description' => 'Text displayed for the exit-fullscreen option.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+      'text_download' => array(
+        'description' => 'Text displayed for the download option.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+    ),
+    'indexes' => array(
+      'label' => array('label'),
+    ),
+    'primary key' => array('name'),
+  );
+
+  return $schema;
+}

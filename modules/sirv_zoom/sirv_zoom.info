@@ -1,0 +1,4 @@
+name = Sirv Zoom
+description = "Provides options for image zooming with Sirv."
+core = 7.x
+dependencies[] = sirv

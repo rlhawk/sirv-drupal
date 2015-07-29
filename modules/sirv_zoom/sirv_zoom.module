@@ -1,0 +1,332 @@
+<?php
+
+/**
+ * @file
+ * Provides options for image zooming with Sirv.
+ */
+
+define('SIRV_ZOOM_MENU_PATH', SIRV_MENU_PATH . '/zoom-profiles');
+
+/**
+ * Implements hook_permission().
+ */
+function sirv_zoom_permission() {
+  return array(
+    'administer sirv zoom profiles' => array(
+      'title' => t('Administer Sirv Zoom profiles'),
+      'description' => "Create, edit, and delete profiles for Sirv Zoom.",
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function sirv_zoom_menu() {
+  $items = array();
+
+  $items[SIRV_ZOOM_MENU_PATH] = array(
+    'title' => 'Sirv Zoom profiles',
+    'description' => 'Profiles for Sirv Zoom.',
+    'page callback' => 'sirv_zoom_profiles_list',
+    'access arguments' => array('administer sirv zoom profiles'),
+    'file' => 'sirv_zoom.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items[SIRV_ZOOM_MENU_PATH . '/add'] = array(
+    'title' => 'Add profile',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sirv_zoom_profile_form'),
+    'access arguments' => array('administer sirv zoom profiles'),
+    'file' => 'sirv_zoom.admin.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+  $items[SIRV_ZOOM_MENU_PATH . '/edit/%sirv_zoom_profile'] = array(
+    'title' => 'Edit profile',
+    // TODO: Add title callback.
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sirv_zoom_profile_form', 6),
+    'access arguments' => array('administer sirv zoom profiles'),
+    'file' => 'sirv_zoom.admin.inc',
+  );
+  $items[SIRV_ZOOM_MENU_PATH . '/delete/%sirv_zoom_profile'] = array(
+    'title' => 'Delete profile',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sirv_zoom_profile_delete_confirm', 6),
+    'access arguments' => array('administer sirv zoom profiles'),
+    'file' => 'sirv_zoom.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function sirv_zoom_theme($existing, $type, $theme, $path) {
+  return array(
+    'sirv_zoom_image_formatter' => array(
+      'variables' => array('items' => array(), 'sirv_zoom_profile' => NULL, 'default_sirv_profile' => NULL, 'responsive_sirv_profiles' => NULL),
+      'file' => 'sirv_zoom.theme.inc',
+    ),
+    'sirv_zoom_profiles_list_description' => array(
+      'variables' => array('label' => NULL, 'name' => NULL),
+      'file' => 'sirv_zoom.theme.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function sirv_zoom_field_formatter_info() {
+  return array(
+    'sirv_zoom_image' => array(
+      'label' => t('Sirv Zoom Image'),
+      'field types' => array('image'),
+      'settings' => array('sirv_zoom_profile' => '', 'default_sirv_profile' => '', 'responsive_sirv_profiles' => '', 'group_images' => TRUE),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function sirv_zoom_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $sirv_zoom_profiles = sirv_zoom_get_profiles_as_options();
+  $sirv_profiles = sirv_profiles();
+
+  $element['sirv_zoom_profile'] = array(
+    '#type' => 'select',
+    '#title' => t('Sirv Zoom profile'),
+    '#default_value' => $settings['sirv_zoom_profile'],
+    '#empty_option' => t('None (default settings)'),
+    '#options' => $sirv_zoom_profiles,
+  );
+  $element['default_sirv_profile'] = array(
+    '#type' => 'select',
+    '#title' => t('Default Sirv profile'),
+    '#default_value' => $settings['default_sirv_profile'],
+    '#empty_option' => t('None (original image)'),
+    '#options' => $sirv_profiles,
+  );
+  $element['responsive_sirv_profiles'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Responsive Sirv profiles (optional)'),
+    '#description' => t('Example: %example.', array('%example' => 'car-zoom-small 767w, car-zoom-medium 959w, car-zoom-large 1279w')),
+    '#default_value' => $settings['responsive_sirv_profiles'],
+  );
+  $element['group_images'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Group multiple images'),
+    '#default_value' => $settings['group_images'],
+  );
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function sirv_zoom_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $sirv_zoom_profiles = sirv_zoom_get_profiles_as_options();
+  $sirv_profiles = sirv_profiles();
+
+  $summary = array();
+
+  if (!empty($settings['sirv_zoom_profile']) && array_key_exists($settings['sirv_zoom_profile'], $sirv_zoom_profiles)) {
+    $summary[] = t('Zoom profile: @profile', array('@profile' => $sirv_zoom_profiles[$settings['sirv_zoom_profile']]));
+  }
+  else {
+    $summary[] = t('Default zoom settings');
+  }
+
+  if (!empty($settings['default_sirv_profile']) && in_array($settings['default_sirv_profile'], $sirv_profiles)) {
+    $summary[] = t('Image profile: @profile', array('@profile' => $settings['default_sirv_profile']));
+  }
+  else {
+    $summary[] = t('Original image');
+  }
+
+  if ($settings['group_images']) {
+    $summary[] = t('Group multiple images');
+  }
+  else {
+    $summary[] = t('Do not group multiple images');
+  }
+
+  return implode('<br />', $summary);
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function sirv_zoom_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  if ($display['settings']['group_images']) {
+    $element[0] = array(
+      '#theme' => 'sirv_zoom_image_formatter',
+      '#items' => $items,
+      '#sirv_zoom_profile' => $settings['sirv_zoom_profile'],
+      '#default_sirv_profile' => $settings['default_sirv_profile'],
+      '#responsive_sirv_profiles' => $settings['responsive_sirv_profiles'],
+    );
+  }
+  else {
+    foreach ($items as $delta => $item) {
+      $element[$delta] = array(
+        '#theme' => 'sirv_zoom_image_formatter',
+        '#items' => array($item),
+        '#sirv_zoom_profile' => $settings['sirv_zoom_profile'],
+        '#default_sirv_profile' => $settings['default_sirv_profile'],
+        '#responsive_sirv_profiles' => $settings['responsive_sirv_profiles'],
+      );
+    }
+  }
+
+  return $element;
+}
+
+/**
+ * Gets information about all Sirv Zoom profiles.
+ *
+ * @param bool $reset
+ *   A flag to force the profiles to be retrieved from the database.
+ *
+ * @return array
+ *   An array of profiles.
+ */
+function sirv_zoom_get_profiles($reset = FALSE) {
+  $profiles = &drupal_static(__FUNCTION__);
+
+  if (!isset($profiles) || $reset) {
+    $profiles = db_query("SELECT * FROM {sirv_zoom_profile} ORDER BY label ASC")->fetchAllAssoc('name', PDO::FETCH_ASSOC);
+  }
+
+  return $profiles;
+}
+
+/**
+ * Gets all Sirv Zoom profiles as options, for use in forms.
+ *
+ * @param bool $reset
+ *   A flag to force the profiles to be retrieved from the database.
+ *
+ * @return array
+ *   An array of profiles, with names for keys and labels for values.
+ */
+function sirv_zoom_get_profiles_as_options($reset = FALSE) {
+  $options = &drupal_static(__FUNCTION__);
+
+  if (!isset($options) || $reset) {
+    $profiles = sirv_zoom_get_profiles($reset);
+    $options = array();
+    foreach($profiles as $name => $profile) {
+      $options[$name] = $profile['label'];
+    }
+  }
+
+  return $options;
+}
+
+/**
+ * Gets information about a specific Sirv Zoom profile.
+ *
+ * @param string $name
+ *   The machine name of the profile to get.
+ * @param bool $reset
+ *   A flag to force the profile to be retrieved from the database.
+ *
+ * @return array
+ *   A Sirv Zoom profile.
+ */
+function sirv_zoom_get_profile($name, $reset = FALSE) {
+  $profiles = &drupal_static(__FUNCTION__);
+
+  if (!isset($profiles) || $reset) {
+    $profiles = sirv_zoom_get_profiles($reset);
+  }
+
+  if (array_key_exists($name, $profiles)) {
+    $profile = $profiles[$name];
+  }
+  else {
+    $profile = NULL;
+  }
+
+  return $profile;
+}
+
+/**
+ * Save a Sirv Zoom profile.
+ *
+ * @param array $fields
+ *   The fields of the profile to save.
+ * @param bool $messages
+ *   TRUE if messages should be displayed.
+ */
+function sirv_zoom_save_profile($fields, $messages = TRUE) {
+  // If the created field is empty, set it to the request time.
+  if (empty($fields['created'])) {
+    $fields['created'] = REQUEST_TIME;
+  }
+
+  // If the changed field is empty, set it to the request time.
+  if (empty($fields['changed'])) {
+    $fields['changed'] = REQUEST_TIME;
+  }
+
+  // Save the profile.
+  $merge_status = db_merge('sirv_zoom_profile')
+    ->key(array('name' => $fields['name']))
+    ->fields($fields)
+    ->execute();
+
+  // Display message and log to watchdog.
+  if ($messages) {
+    $t_args = array('%label' => $fields['label']);
+
+    switch ($merge_status) {
+      case MergeQuery::STATUS_INSERT:
+        drupal_set_message(t('The Sirv Zoom profile %label has been added.', $t_args));
+        watchdog('sirv_zoom', 'Added Sirv Zoom profile %label.', $t_args, WATCHDOG_NOTICE, l(t('view'), SIRV_ZOOM_MENU_PATH . '/list'));
+        break;
+
+      case MergeQuery::STATUS_UPDATE:
+        drupal_set_message(t('The Sirv Zoom profile %label has been updated.', $t_args));
+        watchdog('sirv_zoom', 'Updated Sirv Zoom profile %label.', $t_args, WATCHDOG_NOTICE, l(t('view'), SIRV_ZOOM_MENU_PATH . '/list'));
+        break;
+    }
+  }
+
+  // Load the profile to make sure it was saved.
+  $sirv_zoom_profile = sirv_zoom_get_profile($fields['name'], TRUE);
+  if (empty($sirv_zoom_profile)) {
+    return NULL;
+  }
+
+  // Return the saved profile.
+  return $sirv_zoom_profile;
+}
+
+/**
+ * Menu argument loader: loads a Sirv Zoom profile by name.
+ *
+ * @param string $name
+ *   The machine-readable name of a profile to load, where
+ *   '-' is replaced with '_'.
+ *
+ * @return array
+ *   An array representing a Sirv Zoom profile or FALSE if the
+ *   profile does not exist.
+ */
+function sirv_zoom_profile_load($name) {
+  return sirv_zoom_get_profile(strtr($name, array('-' => '_')));
+}
