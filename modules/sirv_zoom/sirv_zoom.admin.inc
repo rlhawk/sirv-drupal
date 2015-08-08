@@ -134,19 +134,19 @@ function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
     '#default_value' => $profile['options']['fullscreen-only'],
   );
 
-  $form['thumbnail_options'] = array(
+  $form['thumbnails_options'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Thumbnail options'),
+    '#title' => t('Thumbnails options'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $form['thumbnail_options']['thumbnails'] = array(
+  $form['thumbnails_options']['thumbnails'] = array(
     '#type' => 'textfield',
     '#title' => t('Thumbnails position'),
     '#description' => t('Options: @options (use @id to put thumbnails in an external box; default: @default).', array('@options' => 'bottom, left, right, #id', '@id' => '#id', '@default' => 'bottom')),
     '#default_value' => $profile['options']['thumbnails'],
   );
-  $form['thumbnail_options']['thumbnails-orientation'] = array(
+  $form['thumbnails_options']['thumbnails-orientation'] = array(
     '#type' => 'select',
     '#title' => t('Thumbnails orientation'),
     '#description' => t('Orientation of thumbnails when they are positioned outside (via @id). (default: @default).', array('@id' => '#id', '@default' => t('Horizontal'))),
@@ -154,7 +154,7 @@ function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
     '#options' => array('horizontal' => t('Horizontal'), 'vertical' => t('Vertical')),
     '#default_value' => $profile['options']['thumbnails-orientation'],
   );
-  $form['thumbnail_options']['squareThumbnails'] = array(
+  $form['thumbnails_options']['squareThumbnails'] = array(
     '#type' => 'select',
     '#title' => t('Square thumbnails'),
     '#description' => t('Enable square thumbnails (default: @default).', array('@default' => t('True'))),
