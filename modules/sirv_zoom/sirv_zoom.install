@@ -40,7 +40,7 @@ function sirv_zoom_schema() {
         'default' => 0,
       ),
       'options' => array(
-        'descriptions' => 'Options for images displayed with Sirv Zoom.',
+        'description' => 'Options for images displayed with Sirv Zoom.',
         'type' => 'blob',
         'not null' => TRUE,
         'size' => 'big',
