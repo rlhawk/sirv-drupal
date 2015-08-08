@@ -208,6 +208,11 @@ function sirv_zoom_get_profiles($reset = FALSE) {
 
   if (!isset($profiles) || $reset) {
     $profiles = db_query("SELECT * FROM {sirv_zoom_profile} ORDER BY label ASC")->fetchAllAssoc('name', PDO::FETCH_ASSOC);
+
+    foreach ($profiles as $key => $profile) {
+      // Unserialize the options field.
+      $profiles[$key]['options'] = unserialize($profiles[$key]['options']);
+    }
   }
 
   return $profiles;
