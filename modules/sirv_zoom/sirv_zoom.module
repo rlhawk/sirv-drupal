@@ -330,3 +330,27 @@ function sirv_zoom_save_profile($fields, $messages = TRUE) {
 function sirv_zoom_profile_load($name) {
   return sirv_zoom_get_profile(strtr($name, array('-' => '_')));
 }
+
+/**
+ * Helper function to return the list of options for Sirv Zoom
+ */
+function _sirv_zoom_options() {
+  $options = array(
+    'click_to_zoom' => 'click-to-zoom',
+    'zoom_on_wheel' => 'zoom-on-wheel',
+    'fullscreen' => 'fullscreen',
+    'fullscreen_only' => 'fullscreen-only',
+    'retina' => 'retina',
+    'thumbnails' => 'thumbnails',
+    'thumbnails_orientation' => 'thumbnails-orientation',
+    'square_thumbnails' => 'squareThumbnails',
+    'contextmenu' => 'contextmenu',
+    'text_zoom_in' => 'textZoomIn',
+    'text_zoom_out' => 'textZoomOut',
+    'text_enter_fullscreen' => 'textEnterFullscreen',
+    'text_exit_fullscreen' => 'textExitFullscreen',
+    'text_download' => 'textDownload',
+  );
+
+  return $options;
+}
