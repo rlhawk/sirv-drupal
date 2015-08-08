@@ -60,8 +60,7 @@ function sirv_zoom_profiles_list() {
  * @ingroup forms
  */
 function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
-  $all_options = _sirv_zoom_options();
-  foreach (array_keys($all_options) as $option) {
+  foreach (_sirv_zoom_options() as $option) {
     if (!isset($profile['options'][$option])) {
       $profile['options'][$option] = NULL;
     }
@@ -72,14 +71,14 @@ function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
   $form['label'] = array(
     '#title' => t('Name'),
     '#type' => 'textfield',
-    '#default_value' => $profile['label'],
+    '#default_value' => (isset($profile['label'])) ? $profile['label'] : '',
     '#description' => t('The human-readable name of the profile.'),
     '#required' => TRUE,
     '#size' => 30,
   );
   $form['name'] = array(
     '#type' => 'machine_name',
-    '#default_value' => $profile['name'],
+    '#default_value' => (isset($profile['name'])) ? $profile['name'] : '',
     '#maxlength' => 32,
     '#disabled' => isset($profile['name']),
     '#machine_name' => array(
@@ -95,21 +94,21 @@ function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $form['zoom_options']['click_to_zoom'] = array(
+  $form['zoom_options']['click-to-zoom'] = array(
     '#type' => 'select',
     '#title' => t('Click to zoom'),
     '#description' => t('Number of clicks to zoom in (@disabled = disabled zoom on click; default: @default).', array('@disabled' => 0, '@default' => 1)),
     '#empty_option' => t('Default'),
     '#options' => array(0, 1, 2),
-    '#default_value' => $profile['options']['click_to_zoom'],
+    '#default_value' => $profile['options']['click-to-zoom'],
   );
-  $form['zoom_options']['zoom_on_wheel'] = array(
+  $form['zoom_options']['zoom-on-wheel'] = array(
     '#type' => 'select',
     '#title' => t('Zoom on wheel'),
     '#description' => t('Zoom in and out on mouse wheel (default: @default).', array('@default' => t('True'))),
     '#empty_option' => t('Default'),
     '#options' => $true_false_options,
-    '#default_value' => $profile['options']['zoom_on_wheel'],
+    '#default_value' => $profile['options']['zoom-on-wheel'],
   );
 
   $form['fullscreen_options'] = array(
@@ -126,13 +125,13 @@ function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
     '#options' => $true_false_options,
     '#default_value' => $profile['options']['fullscreen'],
   );
-  $form['fullscreen_options']['fullscreen_only'] = array(
+  $form['fullscreen_options']['fullscreen-only'] = array(
     '#type' => 'select',
     '#title' => t('Fullscreen only'),
     '#description' => t('Click main image to go immediately to full-screen (default: @default).', array('@default' => t('False'))),
     '#empty_option' => t('Default'),
     '#options' => $true_false_options,
-    '#default_value' => $profile['options']['fullscreen_only'],
+    '#default_value' => $profile['options']['fullscreen-only'],
   );
 
   $form['thumbnail_options'] = array(
@@ -147,21 +146,21 @@ function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
     '#description' => t('Options: @options (use @id to put thumbnails in an external box; default: @default).', array('@options' => 'bottom, left, right, #id', '@id' => '#id', '@default' => 'bottom')),
     '#default_value' => $profile['options']['thumbnails'],
   );
-  $form['thumbnail_options']['thumbnails_orientation'] = array(
+  $form['thumbnail_options']['thumbnails-orientation'] = array(
     '#type' => 'select',
     '#title' => t('Thumbnails orientation'),
     '#description' => t('Orientation of thumbnails when they are positioned outside (via @id). (default: @default).', array('@id' => '#id', '@default' => t('Horizontal'))),
     '#empty_option' => t('Default'),
     '#options' => array('horizontal' => t('Horizontal'), 'vertical' => t('Vertical')),
-    '#default_value' => $profile['options']['thumbnails_orientation'],
+    '#default_value' => $profile['options']['thumbnails-orientation'],
   );
-  $form['thumbnail_options']['square_thumbnails'] = array(
+  $form['thumbnail_options']['squareThumbnails'] = array(
     '#type' => 'select',
     '#title' => t('Square thumbnails'),
     '#description' => t('Enable square thumbnails (default: @default).', array('@default' => t('True'))),
     '#empty_option' => t('Default'),
     '#options' => $true_false_options,
-    '#default_value' => $profile['options']['square_thumbnails'],
+    '#default_value' => $profile['options']['squareThumbnails'],
   );
 
   $form['context_menu_options'] = array(
@@ -178,35 +177,35 @@ function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
     '#options' => $true_false_options,
     '#default_value' => $profile['options']['contextmenu'],
   );
-  $form['context_menu_options']['text_zoom_in'] = array(
+  $form['context_menu_options']['textZoomIn'] = array(
     '#type' => 'textfield',
     '#title' => t('Zoom-in text'),
     '#description' => t('The text to display for the menu option to zoom in (default: @default).', array('@default' => 'Zoom In')),
-    '#default_value' => $profile['options']['text_zoom_in'],
+    '#default_value' => $profile['options']['textZoomIn'],
   );
-  $form['context_menu_options']['text_zoom_out'] = array(
+  $form['context_menu_options']['textZoomOut'] = array(
     '#type' => 'textfield',
     '#title' => t('Zoom-out text'),
     '#description' => t('The text to display for the menu option to zoom out (default: @default).', array('@default' => 'Zoom Out')),
-    '#default_value' => $profile['options']['text_zoom_out'],
+    '#default_value' => $profile['options']['textZoomOut'],
   );
-  $form['context_menu_options']['text_enter_fullscreen'] = array(
+  $form['context_menu_options']['textEnterFullscreen'] = array(
     '#type' => 'textfield',
     '#title' => t('Enter full screen text'),
     '#description' => t('The text to display for the menu option to enter full screen view (default: @default).', array('@default' => 'Enter Full Screen')),
-    '#default_value' => $profile['options']['text_enter_fullscreen'],
+    '#default_value' => $profile['options']['textEnterFullscreen'],
   );
-  $form['context_menu_options']['text_exit_fullscreen'] = array(
+  $form['context_menu_options']['textExitFullscreen'] = array(
     '#type' => 'textfield',
     '#title' => t('Exit full screen text'),
     '#description' => t('The text to display for the menu option to exit full screen view (default: @default).', array('@default' => 'Exit Full Screen')),
-    '#default_value' => $profile['options']['text_exit_fullscreen'],
+    '#default_value' => $profile['options']['textExitFullscreen'],
   );
-  $form['context_menu_options']['text_download'] = array(
+  $form['context_menu_options']['textDownload'] = array(
     '#type' => 'textfield',
     '#title' => t('Download image text'),
     '#description' => t('The text to display for the menu option to download the image (default: @default).', array('@default' => 'Download Image')),
-    '#default_value' => $profile['options']['text_download'],
+    '#default_value' => $profile['options']['textDownload'],
   );
 
   $form['other_options'] = array(
@@ -226,7 +225,7 @@ function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
 
   $form['created'] = array(
     '#type' => 'value',
-    '#value' => $profile['created'],
+    '#value' => (isset($profile['created'])) ? $profile['created'] : '',
   );
 
   $form['actions'] = array(
@@ -263,12 +262,11 @@ function sirv_zoom_profile_form($form, &$form_state, $profile = NULL) {
 function sirv_zoom_profile_form_submit($form, &$form_state) {
   $fields = array();
   $options = array();
-  $all_options = _sirv_zoom_options();
 
   $fields['name'] = $form_state['values']['name'];
   $fields['label'] = $form_state['values']['label'];
 
-  foreach (array_keys($all_options) as $option) {
+  foreach (_sirv_zoom_options() as $option) {
     if (!empty($form_state['values'][$option])) {
       $options[$option] = $form_state['values'][$option];
     }
