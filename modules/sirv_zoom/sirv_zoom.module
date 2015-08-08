@@ -66,7 +66,7 @@ function sirv_zoom_menu() {
 function sirv_zoom_theme($existing, $type, $theme, $path) {
   return array(
     'sirv_zoom_image_formatter' => array(
-      'variables' => array('items' => array(), 'sirv_zoom_profile' => NULL, 'default_sirv_profile' => NULL, 'responsive_sirv_profiles' => NULL),
+      'variables' => array('items' => array(), 'sirv_zoom_profile' => NULL, 'sirv_zoom_options' => array(), 'default_sirv_profile' => NULL, 'responsive_sirv_profiles' => NULL),
       'file' => 'sirv_zoom.theme.inc',
     ),
     'sirv_zoom_profiles_list_description' => array(
@@ -170,11 +170,21 @@ function sirv_zoom_field_formatter_view($entity_type, $entity, $field, $instance
   $element = array();
   $settings = $display['settings'];
 
+  // Set the options.
+  if (!empty($settings['sirv_zoom_profile'])) {
+    $profile = sirv_zoom_get_profile($settings['sirv_zoom_profile']);
+    $options = $profile['options'];
+  }
+  else {
+    $options = array();
+  }
+
   if ($display['settings']['group_images']) {
     $element[0] = array(
       '#theme' => 'sirv_zoom_image_formatter',
       '#items' => $items,
       '#sirv_zoom_profile' => $settings['sirv_zoom_profile'],
+      '#sirv_zoom_options' => $options,
       '#default_sirv_profile' => $settings['default_sirv_profile'],
       '#responsive_sirv_profiles' => $settings['responsive_sirv_profiles'],
     );
@@ -185,6 +195,7 @@ function sirv_zoom_field_formatter_view($entity_type, $entity, $field, $instance
         '#theme' => 'sirv_zoom_image_formatter',
         '#items' => array($item),
         '#sirv_zoom_profile' => $settings['sirv_zoom_profile'],
+        '#sirv_zoom_options' => $options,
         '#default_sirv_profile' => $settings['default_sirv_profile'],
         '#responsive_sirv_profiles' => $settings['responsive_sirv_profiles'],
       );
