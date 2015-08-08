@@ -283,23 +283,23 @@ function sirv_zoom_save_profile($fields, $messages = TRUE) {
     $fields['changed'] = REQUEST_TIME;
   }
 
+  // Set the primary keys based on whether or not this profile already exists.
+  $primary_keys = (sirv_zoom_get_profile($fields['name'])) ? 'name' : array();
+
   // Save the profile.
-  $merge_status = db_merge('sirv_zoom_profile')
-    ->key(array('name' => $fields['name']))
-    ->fields($fields)
-    ->execute();
+  $write_status = drupal_write_record('sirv_zoom_profile', $fields, $primary_keys);
 
   // Display message and log to watchdog.
   if ($messages) {
     $t_args = array('%label' => $fields['label']);
 
-    switch ($merge_status) {
-      case MergeQuery::STATUS_INSERT:
+    switch ($write_status) {
+      case SAVED_NEW:
         drupal_set_message(t('The Sirv Zoom profile %label has been added.', $t_args));
         watchdog('sirv_zoom', 'Added Sirv Zoom profile %label.', $t_args, WATCHDOG_NOTICE, l(t('view'), SIRV_ZOOM_MENU_PATH . '/list'));
         break;
 
-      case MergeQuery::STATUS_UPDATE:
+      case SAVED_UPDATED:
         drupal_set_message(t('The Sirv Zoom profile %label has been updated.', $t_args));
         watchdog('sirv_zoom', 'Updated Sirv Zoom profile %label.', $t_args, WATCHDOG_NOTICE, l(t('view'), SIRV_ZOOM_MENU_PATH . '/list'));
         break;
