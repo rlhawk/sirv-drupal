@@ -27,9 +27,9 @@ function theme_sirv_image_formatter($variables) {
   }
 
   // If additional options were entered, add them as query parameters.
-  if ($variables['additional_options']) {
+  if ($variables['sirv_image_options']) {
     // parse_str is not used here, because it converts periods to underscores.
-    $options = explode('&', $variables['additional_options']);
+    $options = explode('&', $variables['sirv_image_options']);
     foreach ($options as $option) {
       $parameter = explode('=', $option);
       if (!empty($parameter[0]) && isset($parameter[1])) {
