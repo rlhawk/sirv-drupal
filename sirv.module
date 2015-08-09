@@ -54,7 +54,7 @@ function sirv_menu() {
 function sirv_theme($existing, $type, $theme, $path) {
   return array(
     'sirv_image_formatter' => array(
-      'variables' => array('item' => NULL, 'sirv_profile' => NULL, 'sirv_image_options' => NULL, 'path' => NULL),
+      'variables' => array('item' => NULL, 'path' => NULL),
       'file' => 'sirv.theme.inc',
     ),
     'sirv_image' => array(
@@ -163,21 +163,17 @@ function sirv_field_formatter_view($entity_type, $entity, $field, $instance, $la
   }
 
   foreach ($items as $delta => $item) {
+    // Add additional options to the URI.
+    $item['uri'] = _sirv_add_options_to_uri($item['uri'], $display['settings']['sirv_profile'], $display['settings']['sirv_image_options']);
+
     if (isset($link_file)) {
-      $options = array();
-      if (!empty($display['settings']['sirv_profile'])) {
-        $options['query']['profile'] = $display['settings']['sirv_profile'];
-      }
       $uri = array(
         'path' => file_create_url($item['uri']),
-        'options' => $options,
       );
     }
     $element[$delta] = array(
       '#theme' => 'sirv_image_formatter',
       '#item' => $item,
-      '#sirv_profile' => $display['settings']['sirv_profile'],
-      '#sirv_image_options' => $display['settings']['sirv_image_options'],
       '#path' => isset($uri) ? $uri : '',
     );
   }
@@ -256,4 +252,47 @@ function _sirv_s3client(){
   $s3client = Aws\S3\S3Client::factory($client_config);
 
   return $s3client;
+}
+
+/**
+ * Add additional options to URI for an image.
+ */
+function _sirv_add_options_to_uri($uri, $profile = '', $options = array()) {
+  // Parse the URI and save the query and fragment.
+  $parsed_uri = drupal_parse_url($uri);
+  $path = $parsed_uri['path'];
+  $query = $parsed_uri['query'];
+  $fragment = $parsed_uri['fragment'];
+
+  // If a profile is specified, add it as a query parameter.
+  if ($profile) {
+    $query['profile'] = $profile;
+  }
+
+  // If additional options were entered, add them as query parameters.
+  if ($options) {
+    // parse_str is not used here, because it converts periods to underscores.
+    $options = explode('&', $options);
+    foreach ($options as $option) {
+      $parameter = explode('=', $option);
+      if (!empty($parameter[0]) && isset($parameter[1])) {
+        $query[$parameter[0]] = $parameter[1];
+      }
+    }
+  }
+
+  // Start building the URI again with the path.
+  $uri = $path;
+
+  // Add any query parameters to the URI.
+  if (!empty($query)) {
+    $uri .= '?' . drupal_http_build_query($query);
+  }
+
+  // Add back the fragment, if there is one.
+  if (!empty($fragment)) {
+    $uri .= '#' . $fragment;
+  }
+
+  return $uri;
 }

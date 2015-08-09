@@ -7,7 +7,6 @@
  *   An associative array containing:
  *   - item: Associative array of image data, which may include "uri", "alt",
  *     "width", "height", "title" and "attributes".
- *   - sirv_profile: An optional Sirv profile.
  *   - path: An array containing the link 'path' and link 'options'.
  *
  * @ingroup themeable
@@ -15,44 +14,8 @@
 function theme_sirv_image_formatter($variables) {
   $item = $variables['item'];
 
-  // Parse the URI and save the query and fragment.
-  $parsed_uri = drupal_parse_url($item['uri']);
-  $path = $parsed_uri['path'];
-  $query = $parsed_uri['query'];
-  $fragment = $parsed_uri['fragment'];
-
-  // If a profile is specified, add it as a query parameter.
-  if ($variables['sirv_profile']) {
-    $query['profile'] = $variables['sirv_profile'];
-  }
-
-  // If additional options were entered, add them as query parameters.
-  if ($variables['sirv_image_options']) {
-    // parse_str is not used here, because it converts periods to underscores.
-    $options = explode('&', $variables['sirv_image_options']);
-    foreach ($options as $option) {
-      $parameter = explode('=', $option);
-      if (!empty($parameter[0]) && isset($parameter[1])) {
-        $query[$parameter[0]] = $parameter[1];
-      }
-    }
-  }
-
-  // Start building the URI again with the path.
-  $uri = $path;
-
-  // Add any query parameters to the URI.
-  if (!empty($query)) {
-    $uri .= '?' . drupal_http_build_query($query);
-  }
-
-  // Add back the fragment, if there is one.
-  if (!empty($fragment)) {
-    $uri .= '#' . $fragment;
-  }
-
   $image = array(
-    'path' => $uri,
+    'path' => $item['uri'],
   );
 
   if (array_key_exists('alt', $item)) {
