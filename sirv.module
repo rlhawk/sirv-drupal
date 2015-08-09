@@ -96,7 +96,7 @@ function sirv_field_formatter_settings_form($field, $instance, $view_mode, $form
   $element['sirv_image_options'] = array(
     '#title' => t('Additional Sirv Image options'),
     '#type' => 'textfield',
-    '#description' => t('Override profile options. Example: @example', array('@example' => 'scale.width=250&grayscale=true')),
+    '#description' => t('These options will override profile options. Example of format: %example', array('%example' => 'scale.width=250&grayscale=true')),
     '#default_value' => $settings['sirv_image_options'],
   );
 
