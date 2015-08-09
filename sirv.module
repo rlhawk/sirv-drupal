@@ -54,7 +54,7 @@ function sirv_menu() {
 function sirv_theme($existing, $type, $theme, $path) {
   return array(
     'sirv_image_formatter' => array(
-      'variables' => array('item' => NULL, 'sirv_profile' => NULL, 'path' => NULL),
+      'variables' => array('item' => NULL, 'sirv_profile' => NULL, 'additional_options' => NULL, 'path' => NULL),
       'file' => 'sirv.theme.inc',
     ),
     'sirv_image' => array(
@@ -72,7 +72,7 @@ function sirv_field_formatter_info() {
     'sirv_image' => array(
       'label' => t('Sirv Image'),
       'field types' => array('image'),
-      'settings' => array('sirv_profile' => '', 'image_link' => ''),
+      'settings' => array('sirv_profile' => '', 'additional_options' => '', 'image_link' => ''),
     ),
   );
 }
@@ -91,6 +91,13 @@ function sirv_field_formatter_settings_form($field, $instance, $view_mode, $form
     '#default_value' => $settings['sirv_profile'],
     '#empty_option' => t('None (original image)'),
     '#options' => $profiles,
+  );
+
+  $element['additional_options'] = array(
+    '#title' => t('Additional options'),
+    '#type' => 'textfield',
+    '#description' => t('Overrides profile settings. Example: @example', array('@example' => 'scale.width=250&grayscale=true')),
+    '#default_value' => $settings['additional_options'],
   );
 
   $link_types = array(
@@ -123,6 +130,10 @@ function sirv_field_formatter_settings_summary($field, $instance, $view_mode) {
   }
   else {
     $summary[] = t('Original image');
+  }
+
+  if (!empty($settings['additional_options'])) {
+    $summary[] = t('Additional options');
   }
 
   $link_types = array(
@@ -166,6 +177,7 @@ function sirv_field_formatter_view($entity_type, $entity, $field, $instance, $la
       '#theme' => 'sirv_image_formatter',
       '#item' => $item,
       '#sirv_profile' => $display['settings']['sirv_profile'],
+      '#additional_options' => $display['settings']['additional_options'],
       '#path' => isset($uri) ? $uri : '',
     );
   }

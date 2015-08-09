@@ -16,9 +16,28 @@ function theme_sirv_image_formatter($variables) {
   $item = $variables['item'];
   $uri = $item['uri'];
 
-  // If a profile is specified, add it to the URI.
+  $parameters = array();
+
+  // If a profile is specified, add it as a query parameter.
   if ($variables['sirv_profile']) {
-    $uri .= '?profile=' . urlencode($variables['sirv_profile']);
+    $parameters['profile'] = urlencode($variables['sirv_profile']);
+  }
+
+  // If additional options were entered, add them as query parameters.
+  if ($variables['additional_options']) {
+    // parse_str is not used here, because it converts periods to underscores.
+    $options = explode('&', $variables['additional_options']);
+    foreach ($options as $option) {
+      $parameter = explode('=', $option);
+      if (!empty($parameter[0]) && !empty($parameter[1])) {
+        $parameters[$parameter[0]] = $parameter[1];
+      }
+    }
+  }
+
+  // Add the query parameters to the URI.
+  if (!empty($parameters)) {
+    $uri .= '?' . drupal_http_build_query($parameters);
   }
 
   $image = array(
