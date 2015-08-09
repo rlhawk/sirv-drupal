@@ -84,7 +84,7 @@ function sirv_zoom_field_formatter_info() {
     'sirv_zoom_image' => array(
       'label' => t('Sirv Zoom Image'),
       'field types' => array('image'),
-      'settings' => array('sirv_zoom_profile' => '', 'default_sirv_profile' => '', 'responsive_sirv_profiles' => '', 'group_images' => TRUE),
+      'settings' => array('sirv_zoom_profile' => '', 'sirv_zoom_options' => '', 'default_sirv_profile' => '', 'responsive_sirv_profiles' => '', 'group_images' => TRUE),
     ),
   );
 }
@@ -106,6 +106,12 @@ function sirv_zoom_field_formatter_settings_form($field, $instance, $view_mode, 
     '#empty_option' => t('None (default settings)'),
     '#options' => $sirv_zoom_profiles,
   );
+  $element['sirv_zoom_options'] = array(
+    '#title' => t('Additional Sirv Zoom options'),
+    '#type' => 'textfield',
+    '#description' => t('These options will override profile options. Example of format: %example', array('%example' => 'retina: true; thumbnails: right')),
+    '#default_value' => $settings['sirv_zoom_options'],
+  );
   $element['default_sirv_profile'] = array(
     '#type' => 'select',
     '#title' => t('Default Sirv profile'),
@@ -116,7 +122,7 @@ function sirv_zoom_field_formatter_settings_form($field, $instance, $view_mode, 
   $element['responsive_sirv_profiles'] = array(
     '#type' => 'textfield',
     '#title' => t('Responsive Sirv profiles (optional)'),
-    '#description' => t('Example: %example.', array('%example' => 'car-zoom-small 767w, car-zoom-medium 959w, car-zoom-large 1279w')),
+    '#description' => t('Example of format: %example.', array('%example' => 'car-zoom-small 767w, car-zoom-medium 959w, car-zoom-large 1279w')),
     '#default_value' => $settings['responsive_sirv_profiles'],
   );
   $element['group_images'] = array(
@@ -146,6 +152,10 @@ function sirv_zoom_field_formatter_settings_summary($field, $instance, $view_mod
     $summary[] = t('Default zoom settings');
   }
 
+  if (!empty($settings['sirv_zoom_options'])) {
+    $summary[] = t('Additional Sirv Zoom options');
+  }
+
   if (!empty($settings['default_sirv_profile']) && in_array($settings['default_sirv_profile'], $sirv_profiles)) {
     $summary[] = t('Image profile: @profile', array('@profile' => $settings['default_sirv_profile']));
   }
@@ -170,13 +180,26 @@ function sirv_zoom_field_formatter_view($entity_type, $entity, $field, $instance
   $element = array();
   $settings = $display['settings'];
 
-  // Set the options.
+  // Set the Sirv Zoom options from the profile.
   if (!empty($settings['sirv_zoom_profile'])) {
     $profile = sirv_zoom_get_profile($settings['sirv_zoom_profile']);
     $options = $profile['options'];
   }
   else {
     $options = array();
+  }
+
+  // Add any additional Sirv Zoom options.
+  if (!empty($settings['sirv_zoom_options'])) {
+    $sirv_image_options = explode(';', $settings['sirv_zoom_options']);
+    foreach ($sirv_image_options as $option) {
+      $parameter = explode(':', $option);
+      if (!empty($parameter[0]) && isset($parameter[1])) {
+        $key = trim($parameter[0]);
+        $value = trim($parameter[1]);
+        $options[$key] = $value;
+      }
+    }
   }
 
   if ($display['settings']['group_images']) {
