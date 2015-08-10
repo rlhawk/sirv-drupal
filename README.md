@@ -4,6 +4,8 @@ The Sirv module provides support within Drupal for the image services provided b
 
 ## Dependencies
 
+This module requires Drupal 7.36 or later.
+
 To use Sirv’s image services within Drupal, you will need either a free or paid Sirv account. For more information or to create an account, visit [sirv.com](http://sirv.com/).
 
 In order to allow images to be uploaded to Sirv within Drupal, a module that provides integration with Amazon’s S3 file service is required. Some options are:
@@ -13,6 +15,10 @@ In order to allow images to be uploaded to Sirv within Drupal, a module that pro
 - An S3 container within [Storage API](https://www.drupal.org/project/storage_api)
 
 This module has currently only been tested with the S3 File System module, though it should theoretically work with any module that provides integration with S3.
+
+**Important: In order to use Sirv for image fields, you will need to remove the itok query parameter from image URLs by adding the following line to your settings.php file:**
+
+```$conf['image_suppress_itok_output'] = TRUE;```
 
 ## What does this module do?
 
@@ -42,4 +48,7 @@ Sirv Spin provides support for 360-degree and 3D spinning images. This module do
 
 ## Installation
 
-Install and enable the module in the usual Drupal fashion. In order to upload images to Sirv with a standard Drupal file field, you will need to also install a module that allows Amazon S3 to be used for file storage. 
+Install and enable the module in the usual Drupal fashion. In order to upload images to Sirv with a standard Drupal file field, you will need to install a module that allows Amazon S3 to be used for file storage. You will also need to add the following line to your settings.php file:
+
+```$conf['image_suppress_itok_output'] = TRUE;```
+
