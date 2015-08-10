@@ -195,6 +195,10 @@ function sirv_profiles() {
 
   $s3client = _sirv_s3client();
 
+  if (!$s3client) {
+    return array();
+  }
+
   $iterator = $s3client->getIterator('ListObjects', array(
     'Bucket' => $bucket,
     'Prefix' => $profiles_directory,
@@ -242,6 +246,10 @@ function _sirv_s3client(){
   $key = variable_get('sirv_key');
   $secret_key = variable_get('sirv_secret_key');
   $host = variable_get('sirv_host');
+
+  if (empty($key) || empty($secret_key) || empty($host)) {
+    return NULL;
+  }
 
   $client_config = array(
     'base_url' => $host,
